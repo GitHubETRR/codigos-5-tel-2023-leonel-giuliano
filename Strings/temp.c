@@ -1,6 +1,7 @@
 /* Calcular el promedio entre 10 temperaturas y mostrar cuando valen entre 10 y 20 grados */
 
 #include <stdio.h>
+#include <stdint.h> 
 
 #define TEMP_CANT 10
 #define TEMP_IX (TEMP_CANT - 1)
@@ -14,28 +15,30 @@
 
 #define GRADO 248
 
-void pedirTemp(float[], char);
+void pedirTemp(float[], uint8_t);
 void promedio(float[], float[]);
 void final(float[]);
 
-void main() {
+int main(void) {
     float temp[TEMP_CANT] = {};
-    printf("Bienvenido, este programa se encarga de promediar entre las (10) temperaturas ingresadas y mostrar los que pertenecen a un rango (10 a 20)");
-    for(char i = 0; i < TEMP_CANT; i++) pedirTemp(temp, i);
+    printf("Bienvenido, este programa se encarga de promediar entre las (10) temperaturas ingresadas y mostrar los que pertenecen a un rango (10 a 20)\n");
+    for(uint8_t i = 0; i < TEMP_CANT; i++) pedirTemp(temp, i);
 
     float prom[PROM_L] = {0};
     promedio(temp, prom);
 
     final(prom);
+
+    return 0;
 }
 
-void pedirTemp(float temp[], char num) {
-    printf("inserte temp %d: ", num + 1);
+void pedirTemp(float temp[], uint8_t num) {
+    printf("Inserte temperatura numero %d: ", num + 1);
     scanf("%f", &temp[num]);
 }
 
 void promedio(float temp[], float prom[]) {
-    for(char i = 0; i < TEMP_CANT; i++) {
+    for(uint8_t i = 0; i < TEMP_CANT; i++) {
         prom[PROM_IX] += temp[i];
 
         if(temp[i] > GRADO_I && temp[i] < GRADO_F) prom[GRADO_IX]++;
@@ -44,6 +47,6 @@ void promedio(float temp[], float prom[]) {
 }
 
 void final(float prom[]) {
-    printf("%f", prom[PROM_IX]);
-    printf("\ngrado: %d", (int)prom[GRADO_IX]);
+    printf("Grado promedio: %f\n", prom[PROM_IX]);
+    printf("Cantidad de grados entre 10 y 20: %d", (int)prom[GRADO_IX]);
 }
