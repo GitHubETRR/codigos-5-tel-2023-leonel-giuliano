@@ -1,6 +1,6 @@
-/* Se deberá realizar un programa al que se le puedan ir ingresando los puntos que se van realizando en el partido. El programa deberá pedir a que equipo pertenece el punto (1 o 2) y el valor del punto. El partido y la carga de información finalizará cuando se ingrese que el jugador pertenece al equipo 0.
-Luego de cualquier carga de datos se deberá siempre ir actualizando el puntaje del partido e indicar que equipo va ganando. 
-Cuando el programa finalice, deberá indicar: 
+/* Se debera realizar un programa al que se le puedan ir ingresando los puntos que se van realizando en el partido. El programa debera pedir a que equipo pertenece el punto (1 o 2) y el valor del punto. El partido y la carga de informacion finalizara cuando se ingrese que el jugador pertenece al equipo 0.
+Luego de cualquier carga de datos se debera siempre ir actualizando el puntaje del partido e indicar que equipo va ganando. 
+Cuando el programa finalice, debera indicar: 
 •	Los puntos por cada equipo, y que equipo es el ganador. 
 •	La cantidad simples, dobles y triples que se realizaron.
 •	El porcentaje de puntos que representan los tiros simples, dobles y los triples sobre el total.
@@ -8,6 +8,7 @@ Cuando el programa finalice, deberá indicar:
 
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
 #define TEAM_CANT 2
 #define STR_MAX 50
@@ -33,13 +34,13 @@ typedef struct {
 
 void bienvenida(void);
 void start(team_t teams[]);
-void nameTeam(uint8_t num, char name[]);
+void nameTeam(team_t teams[], uint8_t num);
 void match(team_t teams[]);
 uint8_t selectTeam(void);
-uint8_t pointsF(team_t team);
+void pointsF(team_t teams[], uint8_t team);
 uint8_t repeat(void);
-void final(team_t teams[]);
-void percentageF(team_t team, uint8_t point);
+void end(team_t teams[]);
+void percentageF(team_t teams[], uint8_t team, uint8_t point);
 void endScore(team_t teams[]);
 void endPoints(team_t teams[]);
 
@@ -49,26 +50,37 @@ int main(void) {
     bienvenida();
     start(teams);
     match(teams);
-    final(teams);
+    end(teams);
 
     return 0;
 }
 
 void bienvenida(void) {
-    printf("Hola mundo\n\n");
+    printf("Bienvenido al programa\n");
+    printf("Este se encarga de anotar los puntos de un partido de basket\n");
+    printf("La idea es que, cada vez que se meta un punto en el partido, anote su valor. Este sera interpretado como un simple, doble o triple automaticamente\n");
+    printf("Al finalizar el partido, mostrara al equipo ganador y los datos del mismo.\n\n");
 }
 
 void start(team_t teams[]) {
     for(uint8_t i = 0; i < TEAM_CANT; i++) {
-        nameTeam(i + 1, teams[i].name);
+        nameTeam(teams, i);
         teams[i].score = 0;
         for(uint8_t j = 0; j < POINTS_CANT; j++) teams[i].points[j] = 0;
     }
 }
 
-void nameTeam(uint8_t num, char name[]) {
-    printf("Inserte el string %u: ", num);
-    scanf("%[^\n]%*c", name);
+void nameTeam(team_t teams[], uint8_t num) {
+    printf("Inserte el nombre del equipo %u: ", num + 1);
+    scanf("%[^\n]%*c", teams[num].name);
+
+    if(!num) return;
+
+    while(!strcmp(teams[TEAM2_IX].name, teams[TEAM1_IX].name)) {
+        printf("\nEl nombre tiene que ser distinto del anterior equipo\n");
+        printf("Por favor, inserte el nombre correcto: ");
+        scanf("%[^\n]%*c", teams[TEAM2_IX].name);
+    }
 }
 
 void match(team_t teams[]) {
@@ -77,7 +89,7 @@ void match(team_t teams[]) {
     do {
         uint8_t team = selectTeam();
 
-        teams[team].score = pointsF(teams[team]);
+        pointsF(teams, team);
         choice = repeat();
     } while(choice);
 }
@@ -85,52 +97,51 @@ void match(team_t teams[]) {
 uint8_t selectTeam(void) {
     uint8_t option;
 
-    printf("Seleccione equipo: ");
+    printf("\n\nInserte el equipo que realizo el punto ('1' o '2'): ");
     scanf("%u", &option);
 
     while(option != 1 && option != 2) {
-        printf("Repita: ");
+        printf("\nPor favor, inserte el equipo disponible ('1' o '2'): ");
         scanf("%u", &option);
     }
 
     return --option;
 }
 
-uint8_t pointsF(team_t team) {
+void pointsF(team_t teams[], uint8_t team) {
     uint8_t point;
 
-    printf("Inserte puntaje: ");
+    printf("\nInserte el punto que se realizo, ya sea un Simple ('1'), Doble ('2') o Triple ('3'): ");
     scanf("%u", &point);
 
     while(point < SIMPLE || point > TRIPLE) {
-        printf("Repita: ");
-        scanf("%u", &point);
+        printf("Por favor, inserte un punto valido ('1', '2' o '3'): ");
+        scanf("%u\n", &point);
     }
 
-    team.points[point - 1]++;
-    team.points[POINTS_IX]++;
-    team.score += team.points[point - 1] * point;
-    return team.score;
+    teams[team].points[point - 1]++;
+    teams[team].points[POINTS_IX]++;
+    teams[team].score += teams[team].points[point - 1] * point;
 }
 
 uint8_t repeat(void) {
     uint8_t choice;
 
-    printf("Repetir?: ");
-    scanf("%u", &choice);    
+    printf("\n\nSeleccione '0' para finalizar el partido o '1' si se ha realizado otro punto: ");
+    scanf("%u", &choice);
 
     while(choice != 0 && choice != 1) {
-        printf("Repita: ");
+        printf("Por favor, inserte una opcion valida ('0' o '1'): ");
         scanf("%u", &choice);
     }
 
     return choice;
 }
 
-void final(team_t teams[]) {
+void end(team_t teams[]) {
     for(uint8_t i = 0; i < TEAM_CANT; i++) {
         for(uint8_t j = 0; j < PERCENTAGE_CANT; j++) {
-            percentageF(teams[i], j);
+            percentageF(teams, i, j);
         }
     }
 
@@ -138,17 +149,21 @@ void final(team_t teams[]) {
     endPoints(teams);
 }
 
-void percentageF(team_t team, uint8_t point) {
-    team.percentage[point] = team.points[POINTS_IX] * 100 / team.points[point];
+void percentageF(team_t teams[], uint8_t team, uint8_t point) {
+    teams[team].percentage[point] = (teams[team].points[point]) ?
+        teams[team].points[point] * 100 / teams[team].points[POINTS_IX] :
+        0;
 }
 
 void endScore(team_t teams[]) {
     uint8_t a = TEAM1_IX, b = TEAM2_IX;
 
-    printf("\nFinal\n");
-    printf("Puntaje final\n");
+    printf("\n\n  ---    FINAL   ---\n");
+    printf("PUNTAJE\n");
     printf("Puntaje del equipo %s: %u\n", teams[TEAM1_IX].name, teams[TEAM1_IX].score);
     printf("Puntaje del equipo %s: %u\n", teams[TEAM2_IX].name, teams[TEAM2_IX].score);
+
+    printf("RESULTADO: ");
 
     if(teams[TEAM1_IX].score == teams[TEAM2_IX].score) {
         printf("Empate");
@@ -160,11 +175,11 @@ void endScore(team_t teams[]) {
         b = TEAM1_IX;
     }
 
-    printf("Equipo %s le ganó al equipo %s\n\n", teams[a].name, teams[b].name);
+    printf("El equipo %s le gano al equipo %s\n\n", teams[a].name, teams[b].name);
 }
 
 void endPoints(team_t teams[]) {
-    printf("Puntos\n");
+    printf("PUNTOS\n");
 
     for(uint8_t i = 0; i < TEAM_CANT; i++) {
         printf("Cantidad de puntos del equipo %s:\n", teams[i].name);
